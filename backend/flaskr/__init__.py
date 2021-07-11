@@ -86,17 +86,28 @@ def create_app(test_config=None):
     selection = Question.query.order_by(Question.id).all()
     current_questions = paginate_questions(request, selection)
 
-    categories = Category.query.order_by(Category.type).all()
-
+    # get all categories and add to dict
+    categories = Category.query.all()
+    categories_dict = {}
+    for category in categories:
+      categories_dict[category.id] = category.type
+    
     if len(current_questions) == 0:
       abort(404)
-
+    
     return jsonify({
-      'success': True,
-      'total_questions':len(Question.query.all()),
-      'categories': {category.id: category.type for category in categories},
-      'questions':current_questions,
-    })
+          'success': True,
+          'questions': current_questions,
+          'total_questions': len(Question.query.all()),
+          'categories': categories_dict,
+          'current_category': None})
+    # return jsonify({
+    #   'success': True,
+    #   'total_questions':len(Question.query.all()),
+    #   'categories': {category.id: category.type for category in categories},
+    #   'questions':current_questions,
+    #   'current_category': None
+    # })
 
   '''
   @TODO: 
@@ -105,7 +116,28 @@ def create_app(test_config=None):
   TEST: When you click the trash icon next to a question, the question will be removed.
   This removal will persist in the database and when you refresh the page. 
   '''
+  @app.route('/questions/<int:question_id>', methods=['DELETE'])
+  def delete_question(question_id):
 
+    question = Question.query.filter(Question.id == question_id).one_or_none()
+
+    if question is None:
+      abort(422)
+
+    try:
+      question.delete()
+      
+      selection = Question.query.order_by(Question.id).all()
+      current_questions = paginate_questions(request, selection)
+      
+      return jsonify({
+        'success': True,
+        'questions':current_questions,
+        'total_questions':len(Question.query.all())
+        })
+
+    except:
+      abort(422)
   '''
   @TODO: 
   Create an endpoint to POST a new question, 
@@ -116,7 +148,43 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
+  @app.route('/questions', methods=['POST'])
+  def create_question():
+    body = request.get_json()
 
+    new_question = body.get('question', None)
+    new_answer = body.get('answer', None)
+    new_category = body.get('category', None)
+    new_difficulty = body.get('difficulty', None)    
+    # search = body.get('search', None)
+
+    try:
+      # if search:
+      #   selection = Book.query.order_by(Book.id).filter(Book.title.ilike('%{}%'.format(search)))
+      #   current_books = paginate_books(request, selection)
+
+      #   return jsonify({
+      #     'success': True,
+      #     'books': current_books,
+      #     'total_books': len(selection.all())
+      #   })
+
+      # else: 
+        question = Question(question=new_question, answer=new_answer, category=new_category,difficulty=new_difficulty)
+        question.insert()
+
+        selection = Question.query.order_by(Question.id).all()
+        current_questions = paginate_questions(request, selection)
+
+        return jsonify({
+          'success': True,
+          'created': question.id,
+          'questions': current_questions,
+          'total_questions': len(Question.query.all())
+        })
+
+    except:
+      abort(422)
   '''
   @TODO: 
   Create a POST endpoint to get questions based on a search term. 
