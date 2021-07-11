@@ -16,8 +16,13 @@ def paginate_categories(request,selection):
 
   categories = [category.format() for category in selection]
   current_categories = categories[start:end]
+  print(current_categories)
+  dict_current_categories = {}
+  for category in current_categories:
+
+    dict_current_categories[category['id']] = category['type']
     
-  return current_categories
+  return dict_current_categories
 
 def paginate_questions(request,selection):
   page = request.args.get('page',1,type=int)
@@ -58,14 +63,19 @@ def create_app(test_config=None):
   @app.route('/categories')
   def retrieve_categories():
     selection = Category.query.order_by(Category.id).all()
-    current_categories = paginate_categories(request, selection)
+    
+    # Define the categories for the drop down
+    cat = Category.query.all()
+    categories = {}
+    for category in cat:
+      categories[category.id] = category.type
 
-    if len(current_categories) == 0:
+    if len(categories) == 0:
       abort(404)
 
     return jsonify({
       'success': True,
-      'categories':current_categories,
+      'categories':categories,
       'total_categories':len(Category.query.all())
     })
 
@@ -76,7 +86,8 @@ def create_app(test_config=None):
   This endpoint should return a list of questions, 
   number of total questions, current category, categories. 
 
-  TEST: At this point, when you start the application
+  TEST: Done 
+  At this point, when you start the application
   you should see questions and categories generated,
   ten questions per page and pagination at the bottom of the screen for three pages.
   Clicking on the page numbers should update the questions. 
@@ -134,12 +145,13 @@ def create_app(test_config=None):
     except:
       abort(422)
   '''
-  @TODO: 
+  @TODO: Done
   Create an endpoint to POST a new question, 
   which will require the question and answer text, 
   category, and difficulty score.
 
-  TEST: When you submit a question on the "Add" tab, 
+  TEST:Done 
+  When you submit a question on the "Add" tab, 
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
@@ -154,29 +166,18 @@ def create_app(test_config=None):
     # search = body.get('search', None)
 
     try:
-      # if search:
-      #   selection = Book.query.order_by(Book.id).filter(Book.title.ilike('%{}%'.format(search)))
-      #   current_books = paginate_books(request, selection)
+      question = Question(question=new_question, answer=new_answer, category=new_category,difficulty=new_difficulty)
+      question.insert()
 
-      #   return jsonify({
-      #     'success': True,
-      #     'books': current_books,
-      #     'total_books': len(selection.all())
-      #   })
+      selection = Question.query.order_by(Question.id).all()
+      current_questions = paginate_questions(request, selection)
 
-      # else: 
-        question = Question(question=new_question, answer=new_answer, category=new_category,difficulty=new_difficulty)
-        question.insert()
-
-        selection = Question.query.order_by(Question.id).all()
-        current_questions = paginate_questions(request, selection)
-
-        return jsonify({
-          'success': True,
-          'created': question.id,
-          'questions': current_questions,
-          'total_questions': len(Question.query.all())
-        })
+      return jsonify({
+        'success': True,
+        'created': question.id,
+        'questions': current_questions,
+        'total_questions': len(Question.query.all())
+      })
 
     except:
       abort(422)
@@ -199,7 +200,32 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
+  @app.route('/categories/<int:id>/questions', methods=['GET'])
+  def get_questions_by_category(id):
+    print(id)
+    print('------------')
+    # Get the category
+    search_category = Category.query.filter(Category.id == id).one_or_none()
+    print(search_category)
+    print('------------')
+    if search_category is None:
+      abort(400)
 
+    # Get the questions for the category
+    #selection = Question.query.filter(Question.category == search_category.id).all()
+    #selection = Question.query.filter(Question.category == id).all()
+    selection = Question.query.filter_by(category=id).all()
+    print(selection)
+    print('------------')
+    current_questions = paginate_questions(request, selection)
+
+    # return the results
+    return jsonify({
+      'success': True,
+      'questions': current_questions,
+      'total_questions': len(Question.query.all()),
+      'current_category': search_category.type
+      })
 
   '''
   @TODO: 
