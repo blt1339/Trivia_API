@@ -191,12 +191,39 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
+  @app.route('/questions/search', methods=['POST'])
+  def search_questions():
 
+
+    body = request.get_json()
+    search_term = body.get('searchTerm', None)
+    
+    if not search_term:
+      abort(422)
+    
+    try:
+      search_results = Question.query.filter(
+        Question.question.ilike(f'%{search_term}%')).all()
+
+      if not search_results:
+        abort(422)
+
+      paginated_questions = paginate_questions(request, search_results)
+        
+      return jsonify({
+        'success': True,
+        'questions': paginated_questions,
+        'total_questions': len(search_results),
+        'current_category': None
+        })
+    except:
+      abort(422)
   '''
-  @TODO: 
+  @TODO: Done
   Create a GET endpoint to get questions based on category. 
 
-  TEST: In the "List" tab / main screen, clicking on one of the 
+  TEST: Done
+  In the "List" tab / main screen, clicking on one of the 
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
@@ -205,7 +232,7 @@ def create_app(test_config=None):
     print(id)
     print('------------')
     # Get the category
-    search_category = Category.query.filter(Category.id == id).one_or_none()
+    search_category = Category.query.filter(Category.id == int(id)).one_or_none()
     print(search_category)
     print('------------')
     if search_category is None:
@@ -238,6 +265,7 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
+ 
 
   '''
   @TODO: 
