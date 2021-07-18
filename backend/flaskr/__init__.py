@@ -233,8 +233,7 @@ def create_app(test_config=None):
     print('------------')
     # Get the category
     search_category = Category.query.filter(Category.id == int(id)).one_or_none()
-    print(search_category)
-    print('------------')
+
     if search_category is None:
       abort(400)
 
@@ -242,8 +241,7 @@ def create_app(test_config=None):
     #selection = Question.query.filter(Question.category == search_category.id).all()
     #selection = Question.query.filter(Question.category == id).all()
     selection = Question.query.filter_by(category=id).all()
-    print(selection)
-    print('------------')
+
     current_questions = paginate_questions(request, selection)
 
     # return the results
@@ -255,7 +253,7 @@ def create_app(test_config=None):
       })
 
   '''
-  @TODO: 
+  @TODO: Done
   Create a POST endpoint to get questions to play the quiz. 
   This endpoint should take category and previous question parameters 
   and return a random questions within the given category, 
@@ -283,12 +281,14 @@ def create_app(test_config=None):
 
     for question in quiz_questions:
 
-      if question not in quiz_previous_questions:
+      if question.id not in quiz_previous_questions:
         questions_unasked.append(question.format())
-
-    current_question = random.choice(questions_unasked)
-    print(current_question)
-    quiz_previous_questions.append(current_question)
+    
+    # If there are no more questions than force it to end
+    if len(questions_unasked) == 0:
+      current_question = ''
+    else:
+      current_question = random.choice(questions_unasked)
     
     return jsonify({
       'success':True,
