@@ -265,14 +265,67 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
- 
+  @app.route('/quizzes', methods=['POST'])
+  def get_quiz_questions():
+    quiz = request.get_json()
+    quiz_previous_questions = quiz.get('previous_questions')
+    quiz_category = quiz.get('quiz_category')
+
+    questions_unasked = []
+
+    if quiz_category['id'] == 0:
+      quiz_questions = Question.query.all()
+    else:
+      quiz_questions = Question.query.filter_by(category=quiz_category['id']).all()
+
+    if quiz_questions is None :
+      abort(404)
+
+    for question in quiz_questions:
+
+      if question not in quiz_previous_questions:
+        questions_unasked.append(question.format())
+
+    current_question = random.choice(questions_unasked)
+    print(current_question)
+    quiz_previous_questions.append(current_question)
+    
+    return jsonify({
+      'success':True,
+      'previousQuestions':quiz_previous_questions,
+      'currentQuestion':current_question
+    })
+
 
   '''
-  @TODO: 
+  @TODO: Done
   Create error handlers for all expected errors 
   including 404 and 422. 
   '''
-  
+  @app.errorhandler(400)
+  def bad_request(error): 
+    return jsonify({
+        "success": False, 
+        "error": 400,
+        "message": "Bad Request"
+        }), 400
+
+  @app.errorhandler(404)
+  def not_found(error): 
+    return jsonify({
+        "success": False, 
+        "error": 404,
+        "message": "resource not found"
+        }), 404
+
+  @app.errorhandler(422)
+  def unprocessable_entity(error): 
+    return jsonify({
+        "success": False, 
+        "error": 422,
+        "message": "unprocessable"
+        }), 422
+
   return app
 
     
