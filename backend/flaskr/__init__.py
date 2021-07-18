@@ -10,7 +10,6 @@ QUESTIONS_PER_PAGE = 10
 CATEGORIES_PER_PAGE = 10
 
 def paginate_categories(request,selection):
-  page = request.args.get('page',1,type=int)
   start = (page - 1) * CATEGORIES_PER_PAGE
   end = start + CATEGORIES_PER_PAGE
 
@@ -292,8 +291,7 @@ def create_app(test_config=None):
     
     return jsonify({
       'success':True,
-      'previousQuestions':quiz_previous_questions,
-      'currentQuestion':current_question
+      'question':current_question
     })
 
 

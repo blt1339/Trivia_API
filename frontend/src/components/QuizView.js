@@ -64,10 +64,10 @@ class QuizView extends Component {
         console.log(result)
         this.setState({
           showAnswer: false,
-          previousQuestions: result.previousQuestions,
-          currentQuestion: result.currentQuestion,
+          previousQuestions: previousQuestions,
+          currentQuestion: result.question,
           guess: '',
-          forceEnd: result.currentQuestion ? false : true
+          forceEnd: result.question ? false : true
         })
         return;
       },
