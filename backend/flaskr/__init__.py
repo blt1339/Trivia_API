@@ -85,10 +85,10 @@ def create_app(test_config=None):
   This endpoint should return a list of questions, 
   number of total questions, current category, categories. 
 
-  TEST: Done 
+  TEST: Done
   At this point, when you start the application
   you should see questions and categories generated,
-  ten questions per page and pagination at the bottom of the screen for three pages.
+  ten questions per page and pagination at the bottom of the screen for two pages.
   Clicking on the page numbers should update the questions. 
   '''
   @app.route('/questions')
@@ -149,7 +149,7 @@ def create_app(test_config=None):
   which will require the question and answer text, 
   category, and difficulty score.
 
-  TEST:Done 
+  TEST: Done
   When you submit a question on the "Add" tab, 
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
@@ -163,6 +163,10 @@ def create_app(test_config=None):
     new_category = body.get('category', None)
     new_difficulty = body.get('difficulty', None)    
     # search = body.get('search', None)
+    
+    # Make sure something was entered for all fields
+    if ((new_question is None) or (new_answer is None) or (new_difficulty is None) or (new_category is None)):
+      abort(422)
 
     try:
       question = Question(question=new_question, answer=new_answer, category=new_category,difficulty=new_difficulty)
@@ -181,12 +185,13 @@ def create_app(test_config=None):
     except:
       abort(422)
   '''
-  @TODO: 
+  @TODO: Done
   Create a POST endpoint to get questions based on a search term. 
   It should return any questions for whom the search term 
   is a substring of the question. 
 
-  TEST: Search by any phrase. The questions list will update to include 
+  TEST: Done
+  Search by any phrase. The questions list will update to include 
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
@@ -205,10 +210,10 @@ def create_app(test_config=None):
         Question.question.ilike(f'%{search_term}%')).all()
 
       if not search_results:
-        abort(422)
-
-      paginated_questions = paginate_questions(request, search_results)
-        
+        paginated_questions = ''
+      else:
+        paginated_questions = paginate_questions(request, search_results)
+          
       return jsonify({
         'success': True,
         'questions': paginated_questions,
@@ -221,7 +226,7 @@ def create_app(test_config=None):
   @TODO: Done
   Create a GET endpoint to get questions based on category. 
 
-  TEST: Done
+  TEST: 
   In the "List" tab / main screen, clicking on one of the 
   categories in the left column will cause only questions of that 
   category to be shown. 
@@ -258,7 +263,8 @@ def create_app(test_config=None):
   and return a random questions within the given category, 
   if provided, and that is not one of the previous questions. 
 
-  TEST: In the "Play" tab, after a user selects "All" or a category,
+  TEST: 
+  In the "Play" tab, after a user selects "All" or a category,
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
