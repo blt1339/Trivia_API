@@ -226,24 +226,20 @@ def create_app(test_config=None):
   @TODO: Done
   Create a GET endpoint to get questions based on category. 
 
-  TEST: 
+  TEST: Done
   In the "List" tab / main screen, clicking on one of the 
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
   @app.route('/categories/<int:id>/questions', methods=['GET'])
   def get_questions_by_category(id):
-    print(id)
-    print('------------')
     # Get the category
     search_category = Category.query.filter(Category.id == int(id)).one_or_none()
 
     if search_category is None:
-      abort(400)
+      abort(404)
 
     # Get the questions for the category
-    #selection = Question.query.filter(Question.category == search_category.id).all()
-    #selection = Question.query.filter(Question.category == id).all()
     selection = Question.query.filter_by(category=id).all()
 
     current_questions = paginate_questions(request, selection)
@@ -263,7 +259,7 @@ def create_app(test_config=None):
   and return a random questions within the given category, 
   if provided, and that is not one of the previous questions. 
 
-  TEST: 
+  TEST: Done
   In the "Play" tab, after a user selects "All" or a category,
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
@@ -274,15 +270,15 @@ def create_app(test_config=None):
     quiz_previous_questions = quiz.get('previous_questions')
     quiz_category = quiz.get('quiz_category')
 
+    if quiz_category is None or quiz_previous_questions is None:
+      abort(404)
+
     questions_unasked = []
 
     if quiz_category['id'] == 0:
       quiz_questions = Question.query.all()
     else:
       quiz_questions = Question.query.filter_by(category=quiz_category['id']).all()
-
-    if quiz_questions is None :
-      abort(404)
 
     for question in quiz_questions:
 
