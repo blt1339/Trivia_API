@@ -9,20 +9,7 @@ from models import setup_db, Question, Category
 QUESTIONS_PER_PAGE = 10
 CATEGORIES_PER_PAGE = 10
 
-def paginate_categories(request,selection):
-  start = (page - 1) * CATEGORIES_PER_PAGE
-  end = start + CATEGORIES_PER_PAGE
-
-  categories = [category.format() for category in selection]
-  current_categories = categories[start:end]
-  print(current_categories)
-  dict_current_categories = {}
-  for category in current_categories:
-
-    dict_current_categories[category['id']] = category['type']
-    
-  return dict_current_categories
-
+# Paginate the questions 
 def paginate_questions(request,selection):
   page = request.args.get('page',1,type=int)
   start = (page - 1) * QUESTIONS_PER_PAGE
